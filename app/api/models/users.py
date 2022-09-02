@@ -18,7 +18,7 @@ user_validator = {
                 "description": "password"
             },
             "isAdmin": {
-                "bsonType": "string",
+                "bsonType": "bool",
                 "description": "isAdmin"
             }
         }

@@ -35,5 +35,6 @@ def create_app(config_name='default'):
     # api.add_resource(Usr, '/usr')
     api.add_resource(users.UserAction, '/api/users/<string:_id>')
     api.add_resource(users.UserSignin, '/api/users/signin')
+    api.add_resource(users.UserRegister, '/api/users/register')
 
     return app
