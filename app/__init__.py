@@ -1,10 +1,13 @@
 import certifi
 from flask import Flask
 from config import config
-# from flask_login import LoginManager
+from app.middleware import JSONEncoder
 from dotenv import load_dotenv, find_dotenv
 import os
 from pymongo import MongoClient
+from flask_restful import Api
+from flask_jwt_extended import JWTManager
+# from app.usr import Usr
 
 
 # Connect database
@@ -18,12 +21,19 @@ db = client.test
 
 def create_app(config_name='default'):
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
-    config[config_name].init_app(app)
+    app.config['PROPAGATE_EXCEPTIONS'] = True
+    app.config['RESTFUL_JSON'] = {'cls': JSONEncoder}
+    app.config['JWT_SECRET_KEY'] = 'abcdef123'
+    # app.config.from_object(config[config_name])
+    # config[config_name].init_app(app)
 
-    # db.init_app(app)
-
+    api = Api(app)
+    jwt = JWTManager(app)
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api')
+    from .api import users
+    # api.add_resource(Usr, '/usr')
+    api.add_resource(users.UserAction, '/api/users/<string:_id>')
+    api.add_resource(users.UserSignin, '/api/users/signin')
 
     return app

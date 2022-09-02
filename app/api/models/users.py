@@ -27,7 +27,6 @@ user_validator = {
 try:
     db.create_collection("User")
 except Exception as e:
-    #print(e)
     pass
 
 db.command("collMod", "User", validator=user_validator)
