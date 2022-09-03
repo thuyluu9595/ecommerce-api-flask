@@ -38,7 +38,7 @@ class UserSignin(Resource):
         user = User.find_one({"email": data.email})
 
         if user and data.password == user['password']:
-            access_token = create_access_token(identity=str(user['_id']), fresh=True)
+            access_token = create_access_token(identity=str(user['_id']), fresh=True, additional_claims={"isAdmin": user['isAdmin']})
             refesh_token = create_refresh_token(str(user['_id']))
             return {
                        '_id': user['_id'],
