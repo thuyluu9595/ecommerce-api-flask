@@ -19,15 +19,6 @@ def admin_validator():
     return wrapper
 
 
-# class CustomJSONEncoder(json.JSONEncoder):
-#     def default(self, arg):
-#         if isinstance(arg, datetime):
-#             return arg.isoformat()
-#         elif isinstance(arg, ObjectId):
-#             return str(arg)
-#         else:
-#             super().default(self, arg)
-
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
