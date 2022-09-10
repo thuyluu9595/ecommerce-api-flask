@@ -1,10 +1,8 @@
-from . import api
-from .models.users import User
-from flask import jsonify
-from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token
+from .models.user import User
+from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from flask_restful import Resource, reqparse
 from bson.objectid import ObjectId
-from app.middleware import admin_validator
+from .authentication import admin_validator
 
 parser = reqparse.RequestParser()
 parser.add_argument('email',
@@ -57,7 +55,7 @@ class UserAction(Resource):
                                  type=bool,
                                  required=True)
             data = _parser.parse_args()
-            print(data['isAdmin'])
+            # print(data['isAdmin'])
             User.update_one(user, {
                 '$set': {'name': data['name'],
                          'email': data['email'],
@@ -112,13 +110,17 @@ class UserRegister(Resource):
                             required=True,
                             help="Password cannot be blank")
         data = parser.parse_args()
+        if data.email == "thuyluu9595@gmail.com":
+            isAdmin = True
+        else:
+            isAdmin = False
         if User.find_one({"email": data.email}):
             return {"error": {"message": "string"}}, 500
         user = {
             "name": data.name,
             "email": data.email,
             "password": data.password,
-            "isAdmin": False
+            "isAdmin": isAdmin
         }
         user_id = User.insert_one(user).inserted_id
         user.pop('password')
@@ -136,3 +138,34 @@ class UserList(Resource):
             user['_id'] = str(user['_id'])
             mylist.append(user)
         return mylist, 200
+
+
+class UserUpdateProfile(Resource):
+    @jwt_required()
+    def put(self):
+        parser.add_argument('name',
+                            type=str,
+                            required=True,
+                            help="name is required")
+
+        data = parser.parse_args()
+        user_id = ObjectId(get_jwt_identity())
+        user = User.find_one({'_id': user_id})
+        if user:
+            token = create_access_token(identity=str(user_id), fresh=True)
+            User.update_one(user, {
+                '$set':{
+                    'name': data.name,
+                    'email': data.email,
+                    'password': data.password
+                }
+            })
+            return {
+                '_id': str(user['_id']),
+                'name': user['name'],
+                'email': user['email'],
+                'isAdmin': user['isAdmin'],
+                'token': token
+                   }, 200
+        else:
+            return {{'message': 'Invalid user'}}, 401

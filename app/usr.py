@@ -1,6 +1,6 @@
 from bson.json_util import dumps
 from flask_restful import Resource
-from app.api.models.users import User
+from app.api.models.user import User
 
 
 class Usr(Resource):

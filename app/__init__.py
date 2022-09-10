@@ -31,11 +31,17 @@ def create_app(config_name='default'):
     jwt = JWTManager(app)
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api')
-    from .api import users
+    from .api import users, products
     # api.add_resource(Usr, '/usr')
+    # --------------> User routes <--------------------------------
+    api.add_resource(users.UserUpdateProfile, '/api/users/profile')
     api.add_resource(users.UserAction, '/api/users/<string:_id>')
     api.add_resource(users.UserSignin, '/api/users/signin')
     api.add_resource(users.UserRegister, '/api/users/register')
     api.add_resource(users.UserList, '/api/users')
-
+    # --------------> Product routes <--------------------------------
+    api.add_resource(products.Products, '/api/products')
+    api.add_resource(products.ProductActions, '/api/products/<string:_id>')
+    api.add_resource(products.ProductCategory, '/api/products/categories')
+    api.add_resource(products.ProductBrands, '/api/products/brands')
     return app

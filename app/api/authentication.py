@@ -1,16 +1,18 @@
-# from flask import g, jsonify
-# from flask_httpauth import HTTPBasicAuth
-# from ..models import User
-# from . import api
-# auth = HTTPBasicAuth()
-#
-#
-# @auth.verify_password
-# def verify_password(username, password):
-#     if username == '':
-#         return False
-#     user = User.query.filter_by(user_name = username).first()
-#     if not user:
-#         return False
-#     g.current_user = user
-#     return user.verify_password(password)
+from functools import wraps
+from flask_jwt_extended import verify_jwt_in_request, get_jwt
+
+
+def admin_validator():
+    def wrapper(fn):
+        @wraps(fn)
+        def decorator(*args, **kwargs):
+            verify_jwt_in_request()
+            claim = get_jwt()
+            is_admin = claim['isAdmin']
+            if not is_admin:
+                return {'error': {'message': 'Admin is required'}}, 401
+            return fn(*args, **kwargs)
+
+        return decorator
+
+    return wrapper
