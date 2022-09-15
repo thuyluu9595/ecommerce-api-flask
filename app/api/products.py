@@ -1,7 +1,7 @@
 from math import ceil
 from flask import request
 from models.product import Product
-from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
+# from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from flask_restful import Resource, reqparse, fields
 from bson.objectid import ObjectId
 from authentication import admin_validator
