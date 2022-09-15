@@ -117,8 +117,20 @@ class ProductActions(Resource):
 
 
 class ProductCategory(Resource):
-    pass
+    def get(self):
+        products = Product.find()
+        categories = set()
+        for product in products:
+            categories.add(product['category'])
+        category_list = list(categories)
+        return category_list, 200
 
 
 class ProductBrands(Resource):
-    pass
+    def get(self):
+        products = Product.find()
+        brands = set()
+        for product in products:
+            brands.add(product['brand'])
+        brand_list = list(brands)
+        return brand_list, 200
