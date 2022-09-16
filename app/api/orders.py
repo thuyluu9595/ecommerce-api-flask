@@ -2,8 +2,8 @@ from datetime import datetime
 from math import ceil
 from flask import request
 from models.order import Order
-from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
-from flask_restful import Resource, reqparse, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_restful import Resource, reqparse
 from bson.objectid import ObjectId
 from authentication import admin_validator
 from constants import PAGE_SIZE
@@ -66,7 +66,7 @@ class OrderSummary(Resource):
         pass
 
 
-class UserOrder(Resource):
+class GetUserOrder(Resource):
     @jwt_required()
     def get(self):
         page = int(request.args.get('pageNumber') or 1)
@@ -83,3 +83,60 @@ class UserOrder(Resource):
         }, 200
 
 
+class GetOrderById(Resource):
+    @jwt_required()
+    def get(self, _id):
+        user_id = ObjectId(_id)
+        orders = Order.find({'user': user_id})
+        order_list = list(orders)
+        if orders:
+            return {'count': len(order_list), 'orders': order_list}, 200
+        return {'error': {'message': 'Error'}}, 404
+
+
+class DeliverOrder(Resource):
+    @admin_validator()
+    def put(self, _id):
+        order_id = ObjectId(_id)
+        order = Order.find_one({'_id': order_id})
+        if order:
+            Order.update_one(order, {
+                '$set': {
+                    'isDelivered': True,
+                    'deliveredAt': datetime.now()
+                }
+            })
+            return {}, 200
+        return {'error': {'message': 'Error'}}, 404
+
+
+class OrderCancellation(Resource):
+    @jwt_required()
+    def put(self, _id):
+        order_id = ObjectId(_id)
+        order = Order.find_one({'_id': order_id})
+        if order:
+            Order.update_one(order, {
+                '$set': {
+                    'requestCancel': True,
+                    'requestAt': datetime.now()
+                }
+            })
+            return {}, 200
+        return {'error': {'message': 'Error'}}, 404
+
+
+class ConfirmCancellation(Resource):
+    @admin_validator()
+    def put(self, _id):
+        order_id = ObjectId(_id)
+        order = Order.find_one({'_id': order_id})
+        if order:
+            Order.update_one(order, {
+                '$set': {
+                    'isCanceled': True,
+                    'canceledAt': datetime.now()
+                }
+            })
+            return {}, 200
+        return {'error': {'message': 'Error'}}, 404
