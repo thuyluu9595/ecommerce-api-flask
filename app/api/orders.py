@@ -19,7 +19,9 @@ _parser.add_argument('totalPrice', type=float, required=True)
 _parser.add_argument('paymentResult', type=dict, required=True)
 
 
+# /api/orders/
 class OrderConvention(Resource):
+
     @admin_validator()
     def get(self):
         orders = Order.find()
@@ -41,6 +43,7 @@ class OrderConvention(Resource):
         return {'message': 'Successfully Placed Order'}, 201
 
 
+# /api/orders/{id}/
 class OrderActions(Resource):
     @jwt_required()
     def get(self, _id):
@@ -60,12 +63,14 @@ class OrderActions(Resource):
         return {'error': 'Order Not Found'}, 404
 
 
+# /api/orders/summary/
 class OrderSummary(Resource):
     @admin_validator()
     def get(self):
         pass
 
 
+# /api/orders/mine/
 class GetUserOrder(Resource):
     @jwt_required()
     def get(self):
@@ -83,6 +88,7 @@ class GetUserOrder(Resource):
         }, 200
 
 
+# /api/orders/user/{id}/
 class GetOrderById(Resource):
     @jwt_required()
     def get(self, _id):
@@ -94,6 +100,7 @@ class GetOrderById(Resource):
         return {'error': {'message': 'Error'}}, 404
 
 
+# /{id}/deliver/
 class DeliverOrder(Resource):
     @admin_validator()
     def put(self, _id):
@@ -110,6 +117,7 @@ class DeliverOrder(Resource):
         return {'error': {'message': 'Error'}}, 404
 
 
+# /{id}/cancelrequest/
 class OrderCancellation(Resource):
     @jwt_required()
     def put(self, _id):
@@ -126,6 +134,7 @@ class OrderCancellation(Resource):
         return {'error': {'message': 'Error'}}, 404
 
 
+# /{id}/canceled/
 class ConfirmCancellation(Resource):
     @admin_validator()
     def put(self, _id):

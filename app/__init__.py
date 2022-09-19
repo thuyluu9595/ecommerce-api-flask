@@ -31,7 +31,7 @@ def create_app(config_name='default'):
     jwt = JWTManager(app)
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api')
-    from .api import users, products
+    from .api import users, products, orders
     # api.add_resource(Usr, '/usr')
     # --------------> User routes <--------------------------------
     api.add_resource(users.UserUpdateProfile, '/api/users/profile')
@@ -44,4 +44,14 @@ def create_app(config_name='default'):
     api.add_resource(products.ProductActions, '/api/products/<string:_id>')
     api.add_resource(products.ProductCategory, '/api/products/categories')
     api.add_resource(products.ProductBrands, '/api/products/brands')
+    # --------------> Order routes <--------------------------------
+    api.add_resource(orders.OrderConvention, '/api/orders')
+    api.add_resource(orders.OrderActions, '/api/orders/<string:_id>')
+    api.add_resource(orders.OrderSummary, '/api/orders/summary')
+    api.add_resource(orders.GetUserOrder, '/api/orders/mine')
+    api.add_resource(orders.GetOrderById, '/api/orders/user/<string:_id>')
+    api.add_resource(orders.DeliverOrder, '/<string:_id>/deliver')
+    api.add_resource(orders.OrderCancellation, '/<string:_id>/cancelrequest')
+    api.add_resource(orders.ConfirmCancellation, '/<string:_id>/canceled')
+
     return app
