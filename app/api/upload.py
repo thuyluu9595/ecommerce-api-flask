@@ -1,7 +1,7 @@
 import os
 import boto3
 from authentication import admin_validator
-from flask_restful import Resource,request
+from flask_restful import Resource, request
 from time import time_ns
 from dotenv import load_dotenv, find_dotenv
 
