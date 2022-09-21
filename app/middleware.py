@@ -4,7 +4,6 @@ from bson import ObjectId
 from flask import json
 
 
-
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):

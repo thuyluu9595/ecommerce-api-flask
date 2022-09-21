@@ -31,7 +31,7 @@ def create_app(config_name='default'):
     jwt = JWTManager(app)
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api')
-    from .api import users, products, orders, reviews
+    from .api import users, products, orders, reviews, upload
     # api.add_resource(Usr, '/usr')
     # --------------> User routes <--------------------------------
     api.add_resource(users.UserUpdateProfile, '/api/users/profile')
@@ -58,5 +58,7 @@ def create_app(config_name='default'):
     api.add_resource(reviews.ProductReview, '/api/reviews/product/<string:_id>')
     api.add_resource(reviews.UserReviewForAdmin, '/api/reviews/user/<string:_id>')
     api.add_resource(reviews.ReviewActions, '/api/reviews/<string:_id>')
+    # --------------> Upload routes <--------------------------------
+    api.add_resource(upload.Upload, '/api/uploads/s3')
 
     return app
