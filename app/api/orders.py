@@ -21,18 +21,22 @@ _parser.add_argument('paymentResult', type=dict, required=True)
 
 # /api/orders/
 class OrderConvention(Resource):
-
     @admin_validator()
     def get(self):
+        """
+        Get a list of all orders
+        """
         orders = Order.find()
         return {'order': list(orders)}, 200
 
     @jwt_required()
     def post(self):
         data = _parser.parse_args()
+
         identity = get_jwt_identity()
         _id = identity['_id']
         data['user'] = _id
+
         additional_data = {
             "timestamps": datetime.now(),
             "isDelivered": False,
@@ -47,6 +51,9 @@ class OrderConvention(Resource):
 class OrderActions(Resource):
     @jwt_required()
     def get(self, _id):
+        """
+        Get order by id
+        """
         order_id = ObjectId(_id)
         order = Order.find_one({'_id': order_id})
         if order:
@@ -55,6 +62,9 @@ class OrderActions(Resource):
 
     @jwt_required()
     def delete(self, _id):
+        """
+        Delete order belong to given id
+        """
         order_id = ObjectId(_id)
         order = Order.find_one({'_id': order_id})
         if order:
@@ -67,7 +77,47 @@ class OrderActions(Resource):
 class OrderSummary(Resource):
     @admin_validator()
     def get(self):
-        pass
+        """
+        Get a summary of orders
+        """
+        users = Order.aggregate([
+            {
+                "$group": {"_id": None, "numUsers": {"$sum": 1}}
+            }
+        ])
+        orders = Order.aggregate([
+            {
+                "$group": {
+                    "_id": None,
+                    "numOrders": {"$sum": 1},
+                    "totalSale": {"$sum": "totalPrice"}
+                }
+            }
+        ])
+        dailyOrders = Order.aggregate([
+            {
+                "$group": {
+                    "_id": {"dateToString": {"format": '%Y-%m-%d', "date": "createdAt"}},
+                    "orders": {"$sum": 1},
+                    "sales": {"$sum": "totalPrice"}
+                }
+            }
+        ])
+        productCategories = Order.aggregate([
+            {
+                "$group": {
+                    "_id": "$category",
+                    "count": {"$sum": 1}
+                }
+            }
+        ])
+
+        return {
+            'users': users,
+            'orders': orders,
+            'dailyOrders': dailyOrders,
+            'productCategories': productCategories
+        }, 200
 
 
 # /api/orders/mine/
@@ -77,15 +127,15 @@ class GetUserOrder(Resource):
         page = int(request.args.get('pageNumber') or 1)
         user_id = ObjectId(get_jwt_identity()['_id'])
         count = Order.count_documents({'user': user_id})
-        order_list = Order.find({'user': user_id})\
-            .sort('createdAt', -1)\
-            .skip(PAGE_SIZE * (page-1))\
+        order_list = Order.find({'user': user_id}) \
+            .sort('createdAt', -1) \
+            .skip(PAGE_SIZE * (page - 1)) \
             .limit(PAGE_SIZE)
         return {
-            'orders': list(order_list),
-            'page': page,
-            'pages': ceil(count / PAGE_SIZE)
-        }, 200
+                   'orders': list(order_list),
+                   'page': page,
+                   'pages': ceil(count / PAGE_SIZE)
+               }, 200
 
 
 # /api/orders/user/{id}/

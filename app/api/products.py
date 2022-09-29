@@ -18,8 +18,12 @@ _parser.add_argument('attribute', type=list, required=True, location='json')
 _parser.add_argument('description', type=str, required=True)
 
 
+# /api/products
 class Products(Resource):
     def get(self):
+        """
+        Get all product route
+        """
         args = request.args
         name = args.get("name", type=str) or ''
         category = args.get("category", type=str) or ''
@@ -68,13 +72,20 @@ class Products(Resource):
 
     @admin_validator()
     def post(self):
+        """
+        Create a new product
+        """
         data = _parser.parse_args()
         product = Product.insert_one({**data, "rating": 0, "numReviews":0})
         return {}, 200
 
 
+# /api/products/<string:_id>
 class ProductActions(Resource):
     def get(self, _id):
+        """
+        Get product by id
+        """
         try:
             product_id = ObjectId(_id)
         except Exception as e:
@@ -87,6 +98,9 @@ class ProductActions(Resource):
 
     @admin_validator()
     def put(self, _id):
+        """
+        Update product by id
+        """
         try:
             product_id = ObjectId(_id)
         except Exception as e:
@@ -103,6 +117,9 @@ class ProductActions(Resource):
 
     @admin_validator()
     def delete(self, _id):
+        """
+        Delete product
+        """
         try:
             product_id = ObjectId(_id)
         except Exception as e:
@@ -115,8 +132,12 @@ class ProductActions(Resource):
             return {'error': {'message': 'Product doesnt exist'}}, 404
 
 
+# /api/products/categories
 class ProductCategory(Resource):
     def get(self):
+        """
+        Get all categories from all products
+        """
         products = Product.find()
         categories = set()
         for product in products:
@@ -125,8 +146,12 @@ class ProductCategory(Resource):
         return category_list, 200
 
 
+# /api/products/brands
 class ProductBrands(Resource):
     def get(self):
+        """
+        Get all brands of all products
+        """
         products = Product.find()
         brands = set()
         for product in products:
