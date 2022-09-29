@@ -1,9 +1,13 @@
+import os
 from .models.user import User
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from flask_restful import Resource, reqparse
 from bson.objectid import ObjectId
 from .authentication import admin_validator
+from dotenv import load_dotenv, find_dotenv
+import bcrypt
 
+load_dotenv(find_dotenv())
 parser = reqparse.RequestParser()
 parser.add_argument('email',
                     type=str,
@@ -16,6 +20,7 @@ parser.add_argument('password',
                     help="Password cannot be blank")
 
 
+# /api/users/<string:_id>
 class UserAction(Resource):
     @jwt_required()
     def get(self, _id):
@@ -81,45 +86,50 @@ class UserAction(Resource):
             return {'message': 'User doesn''t exist'}, 401
 
 
+# /api/users/signin
 class UserSignin(Resource):
     @classmethod
     def post(cls):
         data = parser.parse_args()
         user = User.find_one({"email": data.email})
 
-        if user and data.password == user['password']:
+        if user and bcrypt.checkpw(data.password, user['password']):
             access_token = create_access_token(identity=str(user['_id']), fresh=True,
                                                additional_claims={"isAdmin": user['isAdmin']})
-            refesh_token = create_refresh_token(str(user['_id']))
+            refresh_token = create_refresh_token(str(user['_id']))
             return {
                        '_id': user['_id'],
                        'name': user['name'],
                        'email': user['email'],
-                       'isAdmin': False,
+                       'isAdmin': user['isAdmin'],
                        'token': access_token,
-                       'refesh_token': refesh_token
+                       'refresh_token': refresh_token
                    }, 200
         return {'message': 'Invalid credentials'}, 401
 
 
+# /api/users/register
 class UserRegister(Resource):
     @classmethod
-    def post(self):
+    def post(cls):
         parser.add_argument('name',
                             type=str,
                             required=True,
-                            help="Password cannot be blank")
+                            help="Name cannot be blank")
         data = parser.parse_args()
-        if data.email == "thuyluu9595@gmail.com":
+
+        admin_email = os.environ.get('ADMIN_EMAIL')
+
+        if data.email == admin_email:
             isAdmin = True
         else:
             isAdmin = False
         if User.find_one({"email": data.email}):
-            return {"error": {"message": "string"}}, 500
+            return {"error": {"message": "email is already used"}}, 500
         user = {
             "name": data.name,
             "email": data.email,
-            "password": data.password,
+            "password": bcrypt.hashpw(data.password, bcrypt.gensalt()),
             "isAdmin": isAdmin
         }
         user_id = User.insert_one(user).inserted_id
@@ -129,6 +139,7 @@ class UserRegister(Resource):
         return user, 200
 
 
+# /api/users
 class UserList(Resource):
     @admin_validator()
     def get(self):
@@ -140,6 +151,7 @@ class UserList(Resource):
         return mylist, 200
 
 
+# /api/users/profile
 class UserUpdateProfile(Resource):
     @jwt_required()
     def put(self):
@@ -154,18 +166,18 @@ class UserUpdateProfile(Resource):
         if user:
             token = create_access_token(identity=str(user_id), fresh=True)
             User.update_one(user, {
-                '$set':{
+                '$set': {
                     'name': data.name,
                     'email': data.email,
-                    'password': data.password
+                    'password': bcrypt.hashpw(data.password, bcrypt.gensalt())
                 }
             })
             return {
-                '_id': str(user['_id']),
-                'name': user['name'],
-                'email': user['email'],
-                'isAdmin': user['isAdmin'],
-                'token': token
+                       '_id': str(user['_id']),
+                       'name': user['name'],
+                       'email': user['email'],
+                       'isAdmin': user['isAdmin'],
+                       'token': token
                    }, 200
         else:
             return {{'message': 'Invalid user'}}, 401

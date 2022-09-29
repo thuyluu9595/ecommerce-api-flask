@@ -17,13 +17,13 @@ class UserReview(Resource):
     @jwt_required()
     def get(self):
         _id = ObjectId(get_jwt_identity()['_id'])
-        reviews = Review.find({'user': _id})
-        if len(reviews) != 0:
-            for review in reviews:
+        review_list = Review.find({'user': _id})
+        if len(review_list) != 0:
+            for review in review_list:
                 review['_id'] = str(review['_id'])
                 review['user'] = {}
                 review['product'] = {}
-            return list(reviews), 200
+            return list(review_list), 200
         return {'error': {'message': 'Error'}}, 404
 
 

@@ -7,7 +7,6 @@ import os
 from pymongo import MongoClient
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
-# from app.usr import Usr
 
 
 # Connect database
@@ -32,7 +31,7 @@ def create_app(config_name='default'):
     from .api import api as api_blueprint
     app.register_blueprint(api_blueprint, url_prefix='/api')
     from .api import users, products, orders, reviews, upload
-    # api.add_resource(Usr, '/usr')
+
     # --------------> User routes <--------------------------------
     api.add_resource(users.UserUpdateProfile, '/api/users/profile')
     api.add_resource(users.UserAction, '/api/users/<string:_id>')

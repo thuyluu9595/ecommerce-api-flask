@@ -12,3 +12,4 @@ python-dotenv~=0.20.0
 pymongo~=4.2.0
 certifi~=2022.6.15
 boto3~=1.24.77
+bcrypt~=4.0.0
