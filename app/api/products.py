@@ -6,7 +6,6 @@ from bson.objectid import ObjectId
 from authentication import admin_validator
 from constants import PAGE_SIZE
 
-
 _parser = reqparse.RequestParser()
 _parser.add_argument('name', type=str, required=True)
 _parser.add_argument('image', type=str, required=True)
@@ -32,7 +31,7 @@ class Products(Resource):
         _min = args.get("min", type=int) or 0
         _max = args.get("max", type=int) or 0
         rating = args.get("rating", type=int) or 0
-        page = args.get("pageNumber",type=int) or 1
+        page = args.get("pageNumber", type=int) or 1
 
         name_filter = {"name": {"$regex": name, "$options": 'i'}} if name else {}
         category_filter = {"category": category} if category else {}
@@ -76,7 +75,7 @@ class Products(Resource):
         Create a new product
         """
         data = _parser.parse_args()
-        product = Product.insert_one({**data, "rating": 0, "numReviews":0})
+        product = Product.insert_one({**data, "rating": 0, "numReviews": 0})
         return {}, 200
 
 
@@ -109,7 +108,7 @@ class ProductActions(Resource):
         product = Product.find_one({'_id': product_id})
         if product:
             data = _parser.parse_args()
-            product = {**product,**data}
+            product = {**product, **data}
             Product.update_one({'_id': product_id}, {'$set': product})
             return {'message': 'Product Updated Successfully'}, 200
         else:
