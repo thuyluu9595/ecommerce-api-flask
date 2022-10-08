@@ -1,10 +1,10 @@
 from datetime import datetime
-from models.review import Review
-from models.product import Product
+from .models.review import Review
+from .models.product import Product
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful import Resource, reqparse
 from bson.objectid import ObjectId
-from authentication import admin_validator
+from .decorators import admin_validator
 
 
 _parser = reqparse.RequestParser()

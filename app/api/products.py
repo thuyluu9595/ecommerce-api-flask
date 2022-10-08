@@ -1,10 +1,10 @@
 from math import ceil
 from flask import request
-from models.product import Product
+from .models.product import Product
 from flask_restful import Resource, reqparse
 from bson.objectid import ObjectId
-from authentication import admin_validator
-from constants import PAGE_SIZE
+from .decorators import admin_validator
+from .constants import PAGE_SIZE
 
 _parser = reqparse.RequestParser()
 _parser.add_argument('name', type=str, required=True)

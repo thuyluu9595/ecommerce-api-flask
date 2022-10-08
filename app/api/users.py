@@ -3,7 +3,7 @@ from .models.user import User
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from flask_restful import Resource, reqparse
 from bson.objectid import ObjectId
-from .authentication import admin_validator
+from .decorators import admin_validator
 from dotenv import load_dotenv, find_dotenv
 import bcrypt
 
