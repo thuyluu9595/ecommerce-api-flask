@@ -31,6 +31,9 @@ class OrderConvention(Resource):
 
     @jwt_required()
     def post(self):
+        """
+        Creating new order
+        """
         data = _parser.parse_args()
 
         identity = get_jwt_identity()

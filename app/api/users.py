@@ -8,16 +8,16 @@ from dotenv import load_dotenv, find_dotenv
 import bcrypt
 
 load_dotenv(find_dotenv())
-parser = reqparse.RequestParser()
-parser.add_argument('email',
-                    type=str,
-                    required=True,
-                    help="This field cannot be empty")
 
-parser.add_argument('password',
-                    type=str,
-                    required=True,
-                    help="Password cannot be blank")
+_parser = reqparse.RequestParser()
+_parser.add_argument('email',
+                     type=str,
+                     required=True,
+                     help="This field cannot be empty")
+_parser.add_argument('password',
+                     type=str,
+                     required=True,
+                     help="Password cannot be blank")
 
 
 # /api/users/<string:_id>
@@ -26,8 +26,6 @@ class UserAction(Resource):
     def get(self, _id):
         """
         get User by id
-        :param _id:
-        :return:
         """
         try:
             user_id = ObjectId(_id)
@@ -48,18 +46,18 @@ class UserAction(Resource):
 
         user = User.find_one({"_id": user_id}, {"password": 0})
         if user:
-            _parser = reqparse.RequestParser()
-            _parser.add_argument('email',
+            __parser = reqparse.RequestParser()
+            __parser.add_argument('email',
                                  type=str,
                                  required=True)
 
-            _parser.add_argument('name',
+            __parser.add_argument('name',
                                  type=str,
                                  required=True)
-            _parser.add_argument('isAdmin',
+            __parser.add_argument('isAdmin',
                                  type=bool,
                                  required=True)
-            data = _parser.parse_args()
+            data = __parser.parse_args()
             # print(data['isAdmin'])
             User.update_one(user, {
                 '$set': {'name': data['name'],
@@ -90,7 +88,7 @@ class UserAction(Resource):
 class UserSignin(Resource):
     @classmethod
     def post(cls):
-        data = parser.parse_args()
+        data = _parser.parse_args()
         user = User.find_one({"email": data.email})
 
         if user and bcrypt.checkpw(data.password, user['password']):
@@ -112,18 +110,13 @@ class UserSignin(Resource):
 class UserRegister(Resource):
     @classmethod
     def post(cls):
-        parser.add_argument('name',
-                            type=str,
-                            required=True,
-                            help="Name cannot be blank")
-        data = parser.parse_args()
-
+        _parser.add_argument('name',
+                             type=str,
+                             required=True,
+                             help="Name cannot be blank")
+        data = _parser.parse_args()
         admin_email = os.environ.get('ADMIN_EMAIL')
-
-        if data.email == admin_email:
-            isAdmin = True
-        else:
-            isAdmin = False
+        isAdmin = data.email == admin_email
         if User.find_one({"email": data.email}):
             return {"error": {"message": "email is already used"}}, 500
         user = {
@@ -144,23 +137,23 @@ class UserList(Resource):
     @admin_validator()
     def get(self):
         users = User.find()
-        mylist = []
+        user_list = []
         for user in users:
             user['_id'] = str(user['_id'])
-            mylist.append(user)
-        return mylist, 200
+            user_list.append(user)
+        return user_list, 200
 
 
 # /api/users/profile
 class UserUpdateProfile(Resource):
     @jwt_required()
     def put(self):
-        parser.add_argument('name',
-                            type=str,
-                            required=True,
-                            help="name is required")
+        _parser.add_argument('name',
+                             type=str,
+                             required=True,
+                             help="name is required")
 
-        data = parser.parse_args()
+        data = _parser.parse_args()
         user_id = ObjectId(get_jwt_identity())
         user = User.find_one({'_id': user_id})
         if user:
