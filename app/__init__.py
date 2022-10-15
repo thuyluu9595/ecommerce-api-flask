@@ -26,38 +26,36 @@ def create_app(config_name='default'):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    api = Api(app)
+    api = Api(app, prefix='/api')
     jwt = JWTManager(app)
-    from .api import api as api_blueprint
-    app.register_blueprint(api_blueprint, url_prefix='/api')
-    from .api import users, products, orders, reviews, upload
 
+    from .api import users, products, orders, reviews, upload
     # --------------> User routes <--------------------------------
-    api.add_resource(users.UserUpdateProfile, '/api/users/profile')
-    api.add_resource(users.UserAction, '/api/users/<string:_id>')
-    api.add_resource(users.UserSignin, '/api/users/signin')
-    api.add_resource(users.UserRegister, '/api/users/register')
-    api.add_resource(users.UserList, '/api/users')
+    api.add_resource(users.UserUpdateProfile, '/users/profile')
+    api.add_resource(users.UserAction, '/users/<string:_id>')
+    api.add_resource(users.UserSignin, '/users/signin')
+    api.add_resource(users.UserRegister, '/users/register')
+    api.add_resource(users.UserList, '/users')
     # --------------> Product routes <--------------------------------
-    api.add_resource(products.Products, '/api/products')
-    api.add_resource(products.ProductActions, '/api/products/<string:_id>')
-    api.add_resource(products.ProductCategory, '/api/products/categories')
-    api.add_resource(products.ProductBrands, '/api/products/brands')
+    api.add_resource(products.Products, '/products')
+    api.add_resource(products.ProductActions, '/products/<string:_id>')
+    api.add_resource(products.ProductCategory, '/products/categories')
+    api.add_resource(products.ProductBrands, '/products/brands')
     # --------------> Order routes <--------------------------------
-    api.add_resource(orders.OrderConvention, '/api/orders')
-    api.add_resource(orders.OrderActions, '/api/orders/<string:_id>')
-    api.add_resource(orders.OrderSummary, '/api/orders/summary')
-    api.add_resource(orders.GetUserOrder, '/api/orders/mine')
-    api.add_resource(orders.GetOrderById, '/api/orders/user/<string:_id>')
+    api.add_resource(orders.OrderConvention, '/orders')
+    api.add_resource(orders.OrderActions, '/orders/<string:_id>')
+    api.add_resource(orders.OrderSummary, '/orders/summary')
+    api.add_resource(orders.GetUserOrder, '/orders/mine')
+    api.add_resource(orders.GetOrderById, '/orders/user/<string:_id>')
     api.add_resource(orders.DeliverOrder, '/<string:_id>/deliver')
     api.add_resource(orders.OrderCancellation, '/<string:_id>/cancelrequest')
     api.add_resource(orders.ConfirmCancellation, '/<string:_id>/canceled')
     # --------------> Review routes <--------------------------------
-    api.add_resource(reviews.UserReview, '/api/reviews/user')
-    api.add_resource(reviews.ProductReview, '/api/reviews/product/<string:_id>')
-    api.add_resource(reviews.UserReviewForAdmin, '/api/reviews/user/<string:_id>')
-    api.add_resource(reviews.ReviewActions, '/api/reviews/<string:_id>')
+    api.add_resource(reviews.UserReview, '/reviews/user')
+    api.add_resource(reviews.ProductReview, '/reviews/product/<string:_id>')
+    api.add_resource(reviews.UserReviewForAdmin, '/reviews/user/<string:_id>')
+    api.add_resource(reviews.ReviewActions, '/reviews/<string:_id>')
     # --------------> Upload routes <--------------------------------
-    api.add_resource(upload.Upload, '/api/uploads/s3')
+    api.add_resource(upload.Upload, '/uploads/s3')
 
     return app

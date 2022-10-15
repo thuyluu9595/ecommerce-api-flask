@@ -91,7 +91,7 @@ class UserSignin(Resource):
         data = _parser.parse_args()
         user = User.find_one({"email": data.email})
 
-        if user and bcrypt.checkpw(data.password, user['password']):
+        if user and bcrypt.checkpw(data.password.encode('utf-8'), user['password'].encode('utf-8')):
             access_token = create_access_token(identity=str(user['_id']), fresh=True,
                                                additional_claims={"isAdmin": user['isAdmin']})
             refresh_token = create_refresh_token(str(user['_id']))
@@ -110,19 +110,22 @@ class UserSignin(Resource):
 class UserRegister(Resource):
     @classmethod
     def post(cls):
-        _parser.add_argument('name',
-                             type=str,
-                             required=True,
-                             help="Name cannot be blank")
-        data = _parser.parse_args()
+        user_register_parser = reqparse.RequestParser()
+        user_register_parser.add_argument('email', type=str, required=True, help="This field cannot be empty")
+        user_register_parser.add_argument('password', type=str, required=True, help="Password cannot be blank")
+        user_register_parser.add_argument('name', type=str, required=True,help="Name cannot be blank")
+
+        data = user_register_parser.parse_args()
+
         admin_email = os.environ.get('ADMIN_EMAIL')
         isAdmin = data.email == admin_email
+
         if User.find_one({"email": data.email}):
             return {"error": {"message": "email is already used"}}, 500
         user = {
             "name": data.name,
             "email": data.email,
-            "password": bcrypt.hashpw(data.password, bcrypt.gensalt()),
+            "password": bcrypt.hashpw(data.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'),
             "isAdmin": isAdmin
         }
         user_id = User.insert_one(user).inserted_id
@@ -148,10 +151,10 @@ class UserList(Resource):
 class UserUpdateProfile(Resource):
     @jwt_required()
     def put(self):
-        _parser.add_argument('name',
-                             type=str,
-                             required=True,
-                             help="name is required")
+        user_update_parser = reqparse.RequestParser()
+        user_update_parser.add_argument('email', type=str, required=True, help="This field cannot be empty")
+        user_update_parser.add_argument('password', type=str, required=True, help="Password cannot be blank")
+        user_update_parser.add_argument('name', type=str, required=True,help="Name cannot be blank")
 
         data = _parser.parse_args()
         user_id = ObjectId(get_jwt_identity())
@@ -162,7 +165,7 @@ class UserUpdateProfile(Resource):
                 '$set': {
                     'name': data.name,
                     'email': data.email,
-                    'password': bcrypt.hashpw(data.password, bcrypt.gensalt())
+                    'password': bcrypt.hashpw(data.password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 }
             })
             return {
