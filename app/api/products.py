@@ -75,7 +75,7 @@ class Products(Resource):
         Create a new product
         """
         data = _parser.parse_args()
-        product = Product.insert_one({**data, "rating": 0, "numReviews": 0})
+        product = Product.insert_one({**data, "rating": 0.0, "numReviews": 0})
         return {}, 200
 
 
